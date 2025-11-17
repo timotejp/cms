@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: heating-cms-db
+    environment:
+      POSTGRES_DB: heating_cms
+      POSTGRES_USER: heating_user
+      POSTGRES_PASSWORD: heating_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heating_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - heating-cms-network
+
+  backend:
+    build:
+      context: /opt/heating-cms/backend
+      dockerfile: Dockerfile
+    container_name: heating-cms-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://heating_user:heating_pass@postgres:5432/heating_cms
+      PORT: 3001
+      JWT_SECRET: your-secret-key-change-in-production
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - /opt/heating-cms/backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - heating-cms-network
+
+  frontend:
+    build:
+      context: /opt/heating-cms/frontend
+      dockerfile: Dockerfile
+    container_name: heating-cms-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - heating-cms-network
+
+networks:
+  heating-cms-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
