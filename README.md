@@ -21,23 +21,32 @@ Sistem za upravljanje strank za serviserje ogrevalnih sistemov. Moderna aplikaci
 
 ## Hitra namestitev
 
+### Za Portainer 2.33.3 LTS
+
+**Podrobna navodila**: Glejte [PORTAINER_2.33.3_SETUP.md](./PORTAINER_2.33.3_SETUP.md)
+
 ### 1. Priprava datotek
 
 ```bash
 # Na vašem Portainer strežniku
-mkdir -p /opt/heating-cms
+sudo mkdir -p /opt/heating-cms
+sudo chown -R $USER:$USER /opt/heating-cms
 # Naložite vse datoteke v /opt/heating-cms
 ```
 
-### 2. Namestitev v Portainer
+### 2. Namestitev v Portainer 2.33.3 LTS
 
 1. Odprite Portainer → **Stacks** → **Add Stack**
 2. Ime: `heating-cms`
-3. Build method: **Web editor**
-4. **POMEMBNO**: Uporabite absolutne poti v docker-compose.yml:
-   - `context: /opt/heating-cms/backend`
-   - `context: /opt/heating-cms/frontend`
+3. Build method: **Web editor** (ali **Repository** če imate Git)
+4. **POMEMBNO**: Poti so že absolutne v docker-compose.yml
 5. Kliknite **Deploy the stack**
+
+**Kompatibilnost**:
+- ✅ Portainer 2.33.3 LTS
+- ✅ Docker Compose v2.40.2
+- ✅ Health checks z `start_period`
+- ✅ Service dependencies z health conditions
 
 ### 3. Konfiguracija Nginx Proxy Manager
 

@@ -1,5 +1,9 @@
 version: '3.8'
 
+# Heating CMS - Portainer 2.33.3 LTS Compatible
+# Uses Docker Compose v2.40.2 specification
+# All paths are absolute for Portainer compatibility
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -15,8 +19,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - heating-cms-network
+    restart: unless-stopped
+    # Portainer 2.33.3 LTS compatible healthcheck
 
   backend:
     build:
@@ -39,6 +46,13 @@ services:
     restart: unless-stopped
     networks:
       - heating-cms-network
+    # Healthcheck for backend (optional but recommended)
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build:
@@ -48,14 +62,24 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - heating-cms-network
+    # Healthcheck for frontend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
   heating-cms-network:
     driver: bridge
+    name: heating-cms-network
 
 volumes:
   postgres_data:
+    name: heating-cms-postgres-data

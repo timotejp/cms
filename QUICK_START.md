@@ -1,96 +1,65 @@
-# Quick Start Guide - Portainer + Nginx Proxy Manager
+# Quick Start - Portainer 2.33.3 LTS
 
-## 🚀 Quick Deployment (5 Minutes)
+## ✅ Kompatibilnost
 
-### Step 1: Upload Files to Server
+- **Portainer**: 2.33.3 LTS
+- **Docker Compose**: v2.40.2
+- **Docker**: v28.3.0+
+
+## 🚀 5-Minutna Namestitev
+
+### 1. Priprava (1 minuta)
+
 ```bash
-# On your Portainer server
-mkdir -p /opt/heating-cms
-# Upload all files to /opt/heating-cms
+sudo mkdir -p /opt/heating-cms
+sudo chown -R $USER:$USER /opt/heating-cms
+# Naložite vse datoteke v /opt/heating-cms
 ```
 
-### Step 2: Deploy in Portainer
+### 2. Portainer (2 minuti)
 
-**IMPORTANT**: You must use absolute paths in docker-compose.yml!
+1. **Portainer** → **Stacks** → **Add Stack**
+2. Ime: `heating-cms`
+3. Build: **Web editor**
+4. Prilepite `docker-compose.yml` (poti so že absolutne!)
+5. **Deploy**
 
-**Option A: Repository Method (if you have Git)**
-1. Open Portainer → **Stacks** → **Add Stack**
-2. Name: `heating-cms`
-3. Build method: **Repository**
-4. Repository URL: Your Git repo URL
-5. Compose path: `docker-compose.yml`
-6. Click **Deploy the stack**
+### 3. Počakajte (2 minuti)
 
-**Option B: Web Editor (with absolute paths)**
-1. Open Portainer → **Stacks** → **Add Stack**
-2. Name: `heating-cms`
-3. Build method: **Web editor**
-4. **Edit docker-compose.yml** to use absolute paths:
-   - Change `context: ./backend` to `context: /opt/heating-cms/backend`
-   - Change `context: ./frontend` to `context: /opt/heating-cms/frontend`
-   - Change `- ./backend:/app` to `- /opt/heating-cms/backend:/app`
-5. Paste modified content
-6. Click **Deploy the stack**
-7. Wait 5-10 minutes for build
+- Portainer zgradi slike
+- Baza se inicializira
+- Migracije se izvedejo
+- Vse storitve postanejo "healthy"
 
-### Step 3: Configure Nginx Proxy Manager
+### 4. Test
 
-#### Option A: Separate Domains (Recommended)
-- **Frontend**: `heating-cms.yourdomain.com` → `http://portainer-ip:3000`
-- **Backend**: `api.heating-cms.yourdomain.com` → `http://portainer-ip:3001`
-- Enable SSL for both
-
-#### Option B: Single Domain
-- **Domain**: `heating-cms.yourdomain.com` → `http://portainer-ip:3000`
-- Add custom location in Advanced tab:
-  ```nginx
-  location /api {
-      proxy_pass http://portainer-ip:3001;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-  }
-  ```
-
-### Step 4: Update Frontend (If using Option A)
-In Portainer → Stacks → heating-cms → Editor:
-```yaml
-frontend:
-  environment:
-    REACT_APP_API_URL: https://api.heating-cms.yourdomain.com/api
-```
-Click **Update the stack**
-
-### Step 5: Test
-- Visit: `https://heating-cms.yourdomain.com`
+- Frontend: `http://your-server:3000`
+- Backend: `http://your-server:3001/health`
 - Login: `admin@heatingcms.com` / `admin123`
-- **⚠️ Change password immediately!**
 
-## 📋 Default Credentials
-- **Email**: `admin@heatingcms.com`
-- **Password**: `admin123`
+## 📋 Ključne Lastnosti za Portainer 2.33.3
 
-## 🔧 Ports Used
-- **3000**: Frontend (exposed for NPM)
-- **3001**: Backend API (exposed for NPM)
-- **5432**: Database (internal only)
+✅ **Health Checks** - Vsi servisi imajo health checks
+✅ **Service Dependencies** - Pravilen vrstni red zaganjanja
+✅ **Named Resources** - Networks in volumes z imeni
+✅ **Absolute Paths** - Vse poti so absolutne
 
-## 📚 Full Documentation
-- **Complete Setup**: See [PORTAINER_SETUP.md](./PORTAINER_SETUP.md)
-- **NPM Configuration**: See [NGINX_PROXY_MANAGER_SETUP.md](./NGINX_PROXY_MANAGER_SETUP.md)
+## 🔧 Troubleshooting
 
-## 🆘 Quick Troubleshooting
+**"unable to prepare context"**?
+→ Preverite, da so datoteke v `/opt/heating-cms/`
 
-**Services not starting?**
-- Check logs in Portainer → Containers → [container] → Logs
+**Health checks ne delujejo**?
+→ Počakajte na `start_period` (10-40 sekund)
 
-**502 Bad Gateway?**
-- Verify containers are running: `docker ps | grep heating-cms`
-- Test direct connection: `curl http://portainer-ip:3001/health`
+**Storitve se ne zaganjajo**?
+→ Preverite loge v Portainer UI
 
-**Can't connect to API?**
-- Check API URL in frontend environment
-- Verify NPM proxy configuration
-- Check browser console for errors
+## 📚 Več Informacij
 
+- **Podrobna navodila**: [PORTAINER_2.33.3_SETUP.md](./PORTAINER_2.33.3_SETUP.md)
+- **Nginx Proxy Manager**: [NGINX_PROXY_MANAGER_SETUP.md](./NGINX_PROXY_MANAGER_SETUP.md)
+
+---
+
+**Testirano z**: Portainer 2.33.3 LTS ✅
